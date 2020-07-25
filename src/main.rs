@@ -16,8 +16,11 @@ fn get_focused(node : &reply::Node) -> Option<&Node> {
         Some(node)
     } else {
         if let Some(&want) = node.focus.get(0) {
-            let child = node.nodes.iter().find(|n| want == n.id).unwrap();
-            get_focused(child)
+            let child = node.nodes.iter().find(|n| want == n.id);
+            match child {
+                Some(c) => get_focused(c),
+                None => None
+            }
         } else {
             None
         }
@@ -25,26 +28,33 @@ fn get_focused(node : &reply::Node) -> Option<&Node> {
 }
 
 // returns what split is necessary
-fn make_command(con : &mut I3Connection) -> &'static str {
+fn make_command(con : &mut I3Connection) -> String {
+    let mut response = String::from("splith");
     let tree = con.get_tree().unwrap();
-    let focused_node = get_focused(&tree).unwrap();
+    let focused_node = get_focused(&tree);
+    let node : &Node;
 
-    if focused_node.layout != NodeLayout::Stacked && focused_node.layout != NodeLayout::Tabbed && focused_node.nodetype != NodeType::FloatingCon {
-        let width = focused_node.rect.2;
-        let height = focused_node.rect.3;
+    match focused_node {
+        Some(n) => {node = n},
+        None => return response,
+    };
+
+    if node.layout != NodeLayout::Stacked && node.layout != NodeLayout::Tabbed && node.nodetype != NodeType::FloatingCon {
+        let width = node.rect.2;
+        let height = node.rect.3;
         if height > width {
-            return "splitv";
+            response = String::from("splitv");
         }
     }
 
-    return "splith";
+    return response;
 }
 
 fn window_event_handle(e : WindowEventInfo) {
     if e.change == WindowChange::Focus {
         let mut con = I3Connection::connect().unwrap();
         let command = make_command(&mut con);
-        con.run_command(command).unwrap();
+        con.run_command(command.as_str()).unwrap();
     }
 }
 
