@@ -30,7 +30,7 @@ fn get_focused(node : &reply::Node) -> Option<&Node> {
 // returns what split is necessary
 fn make_command(con : &mut I3Connection) -> String {
     let mut response = String::from("splith");
-    let tree = con.get_tree().unwrap();
+    let tree = con.get_tree().expect("Could not get i3 tree");
     let focused_node = get_focused(&tree);
     let node : &Node;
 
@@ -52,14 +52,14 @@ fn make_command(con : &mut I3Connection) -> String {
 
 fn window_event_handle(e : WindowEventInfo) {
     if e.change == WindowChange::Focus {
-        let mut con = I3Connection::connect().unwrap();
+        let mut con = I3Connection::connect().expect("Unable to connect to i3 instance");
         let command = make_command(&mut con);
-        con.run_command(command.as_str()).unwrap();
+        con.run_command(command.as_str()).expect("Unable to run i3 command");
     }
 }
 
 fn main() {
-    let mut listener = I3EventListener::connect().unwrap();
+    let mut listener = I3EventListener::connect().expect("Unable to create i3 listener");
     listener.subscribe(&[Subscription::Window]).unwrap();
 
     for event in listener.listen() {
