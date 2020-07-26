@@ -28,36 +28,36 @@ fn get_focused(node : &reply::Node) -> Option<&Node> {
 }
 
 // returns what split is necessary
-fn make_command(con : &mut I3Connection) -> String {
-    let mut response = String::from("");
+fn make_command(con : &mut I3Connection) -> &'static str {
     let tree = con.get_tree().expect("Could not get i3 tree");
     let focused_node = get_focused(&tree);
     let node : &Node;
 
     match focused_node {
         Some(n) => {node = n},
-        None => return response,
+        None => return "",
     };
 
     if node.layout != NodeLayout::Stacked && node.layout != NodeLayout::Tabbed && node.nodetype != NodeType::FloatingCon {
         let width = node.rect.2;
         let height = node.rect.3;
+        //println!("w {} h {}", width, height);
         if height > width {
-            response = String::from("splitv");
+            return "splitv";
         }
         else {
-            response = String::from("splith")
+            return "splith"
         }
     }
 
-    return response;
+    return "";
 }
 
 fn window_event_handle(e : WindowEventInfo) {
     if e.change == WindowChange::Focus {
         let mut con = I3Connection::connect().expect("Unable to connect to i3 instance");
         let command = make_command(&mut con);
-        con.run_command(command.as_str()).expect("Unable to run i3 command");
+        con.run_command(command).expect("Unable to run i3 command");
     }
 }
 
