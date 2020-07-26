@@ -29,7 +29,7 @@ fn get_focused(node : &reply::Node) -> Option<&Node> {
 
 // returns what split is necessary
 fn make_command(con : &mut I3Connection) -> String {
-    let mut response = String::from("splith");
+    let mut response = String::from("");
     let tree = con.get_tree().expect("Could not get i3 tree");
     let focused_node = get_focused(&tree);
     let node : &Node;
@@ -44,6 +44,9 @@ fn make_command(con : &mut I3Connection) -> String {
         let height = node.rect.3;
         if height > width {
             response = String::from("splitv");
+        }
+        else {
+            response = String::from("splith")
         }
     }
 
